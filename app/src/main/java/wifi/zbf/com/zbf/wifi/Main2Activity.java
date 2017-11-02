@@ -5,12 +5,17 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -36,21 +41,32 @@ public class Main2Activity extends AppCompatActivity
     private void viewInit() {
     }
 
-    private void wifiInit() {
+    private void wifiInit() throws Exception {
         wifiAdmin = new WifiAdmin(this);
         wifiAdmin.openWifi();
         wifiAdmin.startScan();
         list_wifi = wifiAdmin.getWifiList();
         Log.e("zbf", list_wifi.toString());
         WifiConfiguration configuration = wifiAdmin.createWifiCfg("zbf-123456", "hsrg8888", 3);
+        wifiAdmin.closeWifi();
         wifiAdmin.createWifiAP(configuration, true);
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Method method = connectivityManager.getClass().getMethod("startTethering",);
+
+        Log.e("zbf", wifiAdmin.getWifiInfo().toString());
+
+
     }
+
+
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     void needLocation() {
-        wifiInit();
+        try
+        {
+            wifiInit();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
