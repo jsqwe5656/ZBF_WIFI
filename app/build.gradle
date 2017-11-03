@@ -6,6 +6,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 25
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "wifi.zbf.com.zbf.wifi"
         minSdkVersion 19

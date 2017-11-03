@@ -6,6 +6,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,7 @@ public class WifiAdmin
 
     WifiAdmin(Context context) {
         //获取系统Wifi服务   WIFI_SERVICE
-        this.mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        this.mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         //获取连接信息
         if (this.mWifiManager != null)
         {
@@ -51,13 +52,16 @@ public class WifiAdmin
      * @param str 热点名称
      */
     public WifiConfiguration isExsits(String str) {
-        Iterator<WifiConfiguration> localIterator = this.mWifiManager.getConfiguredNetworks().iterator();
+        List<WifiConfiguration> list = mWifiManager.getConfiguredNetworks();
+        if (list == null)
+            return null;
+        Iterator<WifiConfiguration> localIterator = list.iterator();
         WifiConfiguration localWifiConfiguration;
         do
         {
             if (!localIterator.hasNext()) return null;
             localWifiConfiguration = localIterator.next();
-        } while (!localWifiConfiguration.SSID.equals("\"" + str + "\""));
+        } while (!localWifiConfiguration.SSID.equals(str));
         return localWifiConfiguration;
     }
 
@@ -139,8 +143,8 @@ public class WifiAdmin
         config.allowedKeyManagement.clear();
         config.allowedPairwiseCiphers.clear();
         config.allowedProtocols.clear();
-        config.SSID = "\"" + SSID + "\"";
-        WifiConfiguration tempConfig = isExsits(SSID);
+        config.SSID = SSID;
+        WifiConfiguration tempConfig = isExsits("\"" + SSID + "\"");
         if (tempConfig != null)
         {
             mWifiManager.removeNetwork(tempConfig.networkId);
@@ -154,7 +158,7 @@ public class WifiAdmin
         if (Type == 2) //WIFICIPHER_WEP
         {
             config.hiddenSSID = true;
-            config.wepKeys[0] = "\"" + Password + "\"";
+            config.wepKeys[0] = Password;
             config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
@@ -165,8 +169,8 @@ public class WifiAdmin
         }
         if (Type == 3) //WIFICIPHER_WPA
         {
-            config.preSharedKey = "\"" + Password + "\"";
-            config.hiddenSSID = true;
+            config.preSharedKey = Password;
+            config.hiddenSSID = false;
             config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
             config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
@@ -182,32 +186,41 @@ public class WifiAdmin
     /**
      * 根据wifi信息创建或关闭一个热点
      *
-     * @param paramWifiConfiguration
-     * @param paramBoolean           关闭标志
+     * @param paramWifiConfiguration WIFI热点配置
      */
-    public Boolean createWifiAP(WifiConfiguration paramWifiConfiguration, boolean paramBoolean) {
+    public Boolean openWifiAP(WifiConfiguration paramWifiConfiguration) {
+        if (mWifiManager.isWifiEnabled())
+        {
+            //如果wifi处于打开状态，则关闭wifi,
+            mWifiManager.setWifiEnabled(false);
+        }
         try
         {
-//            Class localClass = this.mWifiManager.getClass();
-//            Class[] arrayOfClass = new Class[2];
-//            arrayOfClass[0] = WifiConfiguration.class;
-//            arrayOfClass[1] = Boolean.TYPE;
-//            Method localMethod = localClass.getMethod("setWifiApEnabled", arrayOfClass);
-//            WifiManager localWifiManager = this.mWifiManager;
-//            Object[] arrayOfObject = new Object[2];
-//            arrayOfObject[0] = paramWifiConfiguration;
-//            arrayOfObject[1] = Boolean.valueOf(paramBoolean);
-//            localMethod.invoke(localWifiManager, arrayOfObject);
-            //通过反射调用设置热点
             Method method = mWifiManager.getClass().getMethod(
                     "setWifiApEnabled", WifiConfiguration.class, Boolean.TYPE);
-            //返回热点打开状态
-            return (Boolean) method.invoke(mWifiManager, paramWifiConfiguration, true);
+            method.invoke(mWifiManager, paramWifiConfiguration, true);
+            return true;
         } catch (Exception e)
         {
             e.printStackTrace();
-            return false;
         }
+        return false;
+    }
+
+    /**
+     * 关闭热点
+     */
+    public boolean closeWifiAp() {
+        try
+        {
+            Method method = mWifiManager.getClass().getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
+            method.invoke(mWifiManager, null, false);
+            return true;
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
