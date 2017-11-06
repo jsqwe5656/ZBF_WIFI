@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+
 @RuntimePermissions
 public class Main2Activity extends AppCompatActivity
 {
@@ -50,7 +51,8 @@ public class Main2Activity extends AppCompatActivity
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         this.savedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_main2);
@@ -65,46 +67,60 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 广播初始化
      */
-    private void receiverInit() {
+    private void receiverInit()
+    {
         wifiAPBroadcastReceiver = new WifiAPBroadcastReceiver(wifiAdmin)
         {
             @Override
-            public void onWifiApEnabled(String wifiStates) {
+            public void onWifiApEnabled(String wifiStates)
+            {
                 tv_status.setText(wifiStates);
             }
 
             @Override
-            public void onWifiListResult(List<ScanResult> results) {
+            public void onWifiListResult(List<ScanResult> results)
+            {
                 list_wifi = results;
             }
 
             @Override
-            public void onWifiState(String states) {
+            public void onWifiState(String states)
+            {
+                tv_wifiConnect.setText(states);
+            }
+
+            @Override
+            public void onWifiConnecting(String states)
+            {
                 tv_wifiConnect.setText(states);
             }
         };
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         registerReceiver(wifiAPBroadcastReceiver, wifiAPBroadcastReceiver.getFilter());
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         super.onPause();
         unregisterReceiver(wifiAPBroadcastReceiver);
     }
 
-    private void viewInit() {
+    private void viewInit()
+    {
         tv_status = (TextView) findViewById(R.id.textView);
         tv_wifiConnect = (TextView) findViewById(R.id.textView2);
 
 
     }
 
-    public void onClick(View view) {
+    public void onClick(View view)
+    {
         switch (view.getId())
         {
             case R.id.button:                   //开启热点
@@ -130,10 +146,11 @@ public class Main2Activity extends AppCompatActivity
                         WifiConfiguration configuration = wifiAdmin.isExsits("HSRG2");
                         if (configuration == null)
                         {
-
+                            WifiConfiguration config = wifiAdmin.createWifiCfg("HSRG2", "HSRG8888", 3);
+                            wifiAdmin.connect(config);
                         } else
                         {
-
+                            wifiAdmin.connect(configuration);
                         }
                     }
                 }
@@ -144,7 +161,8 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 初始化热点
      */
-    private void wifiInit() {
+    private void wifiInit()
+    {
         WifiConfiguration configuration = wifiAdmin.createWifiCfg("wireless-znsx-5B", "Y690H99Z5C", 3);
         if (!wifiAdmin.openWifiAP(configuration))
         {
@@ -158,23 +176,27 @@ public class Main2Activity extends AppCompatActivity
 
 
     @NeedsPermission(Manifest.permission.WRITE_SETTINGS)
-    void needSettings() {
+    void needSettings()
+    {
         wifiInit();
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    void needLocation() {
+    void needLocation()
+    {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Main2ActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
 
         Main2ActivityPermissionsDispatcher.onActivityResult(this, requestCode);

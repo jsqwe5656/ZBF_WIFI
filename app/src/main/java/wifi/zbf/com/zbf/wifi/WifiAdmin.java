@@ -308,4 +308,13 @@ public class WifiAdmin
         }
         mWifiManager.startScan();
     }
+
+    /**
+     * 连接热点
+     */
+    public void connect(WifiConfiguration  configuration)
+    {
+        int wcgID = mWifiManager.addNetwork(configuration);
+        mWifiManager.enableNetwork(wcgID, true);
+    }
 }

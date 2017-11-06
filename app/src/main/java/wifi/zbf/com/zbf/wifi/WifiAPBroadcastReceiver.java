@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -24,12 +26,14 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
     public static final String TAG = WifiAPBroadcastReceiver.class.getSimpleName();
     private WifiAdmin wifiAdmin;
 
-    public WifiAPBroadcastReceiver(WifiAdmin wifiAdmin) {
+    public WifiAPBroadcastReceiver(WifiAdmin wifiAdmin)
+    {
         this.wifiAdmin = wifiAdmin;
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent)
+    {
         String action = intent.getAction();
         if (action.equals(ACTION_WIFI_AP_STATE_CHANGED))
         { //Wifi AP state changed
@@ -76,9 +80,36 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
                     onWifiState("WIFI未知");
                     break;
             }
+        } else if (action.equals(ACTION_NETWORK_STATE_CHANGED_ACTION))
+        {
+            NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+            if (info.getState().equals(NetworkInfo.State.DISCONNECTED))
+            {
+                onWifiState("连接已断开");
+            } else if (info.getState().equals(NetworkInfo.State.CONNECTED))
+            {
+                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                onWifiState("已连接到网络:" + wifiInfo.getSSID());
+
+            } else
+            {
+                NetworkInfo.DetailedState state = info.getDetailedState();
+                if (state == state.CONNECTING)
+                {
+                    onWifiState("连接中...");
+                } else if (state == state.AUTHENTICATING)
+                {
+                    onWifiState("正在验证身份信息...");
+                } else if (state == state.OBTAINING_IPADDR)
+                {
+                    onWifiState("正在获取IP地址...");
+                } else if (state == state.FAILED)
+                {
+                    onWifiState("连接失败");
+                }
+            }
         }
-
-
     }
 
     /**
@@ -96,21 +127,30 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
      */
     public abstract void onWifiState(String states);
 
+    /**
+     * wifi连接过程状态
+     */
+    public abstract void onWifiConnecting(String states);
+
     //WIFI AP state action
     public static final String ACTION_WIFI_AP_STATE_CHANGED = "android.net.wifi.WIFI_AP_STATE_CHANGED";
     //搜索完成返回列表
     public static final String ACTION_SCAN_RESULTS_AVAILABLE_ACTION = WifiManager.SCAN_RESULTS_AVAILABLE_ACTION;
     //WIFI状态改变
     public static final String ACTION_WIFI_STATE_CHANGED_ACTION = WifiManager.WIFI_STATE_CHANGED_ACTION;
+    //WIFI连接状态改变
+    public static final String ACTION_NETWORK_STATE_CHANGED_ACTION = WifiManager.NETWORK_STATE_CHANGED_ACTION;
 
     /**
      * 监听规则
      */
-    public IntentFilter getFilter() {
+    public IntentFilter getFilter()
+    {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_WIFI_AP_STATE_CHANGED);
         intentFilter.addAction(ACTION_SCAN_RESULTS_AVAILABLE_ACTION);
         intentFilter.addAction(ACTION_WIFI_STATE_CHANGED_ACTION);
+        intentFilter.addAction(ACTION_NETWORK_STATE_CHANGED_ACTION);
         return intentFilter;
     }
 
