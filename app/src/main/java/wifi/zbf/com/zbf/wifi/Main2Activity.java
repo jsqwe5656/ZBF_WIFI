@@ -45,6 +45,9 @@ public class Main2Activity extends AppCompatActivity
     protected Bundle savedInstanceState;
 
     TextView tv_status;
+    TextView tv_wifiConnect;
+
+    private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +55,51 @@ public class Main2Activity extends AppCompatActivity
         this.savedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_main2);
         Main2ActivityPermissionsDispatcher.needLocationWithCheck(this);
-//        Main2ActivityPermissionsDispatcher.needSettingsWithCheck(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        wifiAdmin = new WifiAdmin(this);
+        receiverInit();
         viewInit();
+    }
+
+    /**
+     * 广播初始化
+     */
+    private void receiverInit() {
+        wifiAPBroadcastReceiver = new WifiAPBroadcastReceiver(wifiAdmin)
+        {
+            @Override
+            public void onWifiApEnabled(String wifiStates) {
+                tv_status.setText(wifiStates);
+            }
+
+            @Override
+            public void onWifiListResult(List<ScanResult> results) {
+                list_wifi = results;
+            }
+
+            @Override
+            public void onWifiState(String states) {
+                tv_wifiConnect.setText(states);
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(wifiAPBroadcastReceiver, wifiAPBroadcastReceiver.getFilter());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(wifiAPBroadcastReceiver);
     }
 
     private void viewInit() {
         tv_status = (TextView) findViewById(R.id.textView);
+        tv_wifiConnect = (TextView) findViewById(R.id.textView2);
 
 
     }
@@ -72,12 +111,31 @@ public class Main2Activity extends AppCompatActivity
                 Main2ActivityPermissionsDispatcher.needSettingsWithCheck(this);
                 break;
             case R.id.button2:                  //关闭热点
-                if (wifiAdmin.closeWifiAp())
-                {
-                    tv_status.setText("已关闭");
-                } else
+                if (!wifiAdmin.closeWifiAp())
                 {
                     tv_status.setText("关闭失败");
+                }
+                break;
+            case R.id.button3:                  //搜索热点
+                wifiAdmin.startScan();
+                break;
+            case R.id.button4:                  //连接热点
+                for (ScanResult result : list_wifi)
+                {
+                    if (result.BSSID.equals("HSRG2"))
+                    {
+                        //加密方式
+                        String capabliities = result.capabilities;
+
+                        WifiConfiguration configuration = wifiAdmin.isExsits("HSRG2");
+                        if (configuration == null)
+                        {
+
+                        } else
+                        {
+
+                        }
+                    }
                 }
                 break;
         }
@@ -87,20 +145,10 @@ public class Main2Activity extends AppCompatActivity
      * 初始化热点
      */
     private void wifiInit() {
-        wifiAdmin = new WifiAdmin(this);
-        wifiAdmin.openWifi();
-        wifiAdmin.startScan();
-        list_wifi = wifiAdmin.getWifiList();
-        Log.e("zbf", list_wifi.toString());
         WifiConfiguration configuration = wifiAdmin.createWifiCfg("wireless-znsx-5B", "Y690H99Z5C", 3);
-        if (wifiAdmin.openWifiAP(configuration))
-        {
-            tv_status.setText("开启成功");
-//            Toast.makeText(Main2Activity.this, "开启成功", Toast.LENGTH_SHORT).show();
-        } else
+        if (!wifiAdmin.openWifiAP(configuration))
         {
             tv_status.setText("开启失败");
-//            Toast.makeText(Main2Activity.this, "开启失败", Toast.LENGTH_SHORT).show();
         }
 
         Log.e("zbf", wifiAdmin.getWifiInfo().toString());

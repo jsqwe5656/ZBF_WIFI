@@ -36,9 +36,9 @@ public class WifiAdmin
         } else return wifiAdmin;
     }
 
-    WifiAdmin(Context context) {
+    public WifiAdmin(Context context) {
         //获取系统Wifi服务   WIFI_SERVICE
-        this.mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        this.mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         //获取连接信息
         if (this.mWifiManager != null)
         {
@@ -87,6 +87,13 @@ public class WifiAdmin
         { //判断时候锁定
             mWifilock.acquire();
         }
+    }
+
+    /**
+     * wifi开启状态
+     */
+    public boolean getWifiEnabled() {
+        return mWifiManager.isWifiEnabled();
     }
 
     /**
@@ -270,8 +277,8 @@ public class WifiAdmin
      * 得到网络列表
      **/
     public List<ScanResult> getWifiList() {
-        this.mWifiList = this.mWifiManager.getScanResults();
-        return this.mWifiList;
+        mWifiList = mWifiManager.getScanResults();
+        return mWifiList;
     }
 
     /**
@@ -293,7 +300,12 @@ public class WifiAdmin
     /**
      * 开始搜索wifi
      **/
-    public boolean startScan() {
-        return this.mWifiManager.startScan();
+    public void startScan() {
+        if (!mWifiManager.isWifiEnabled())
+        {
+            //开启wifi
+            mWifiManager.setWifiEnabled(true);
+        }
+        mWifiManager.startScan();
     }
 }
