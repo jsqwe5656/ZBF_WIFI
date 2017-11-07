@@ -51,8 +51,7 @@ public class Main2Activity extends AppCompatActivity
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.savedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_main2);
@@ -67,60 +66,51 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 广播初始化
      */
-    private void receiverInit()
-    {
+    private void receiverInit() {
         wifiAPBroadcastReceiver = new WifiAPBroadcastReceiver(wifiAdmin)
         {
             @Override
-            public void onWifiApEnabled(String wifiStates)
-            {
+            public void onWifiApEnabled(String wifiStates) {
                 tv_status.setText(wifiStates);
             }
 
             @Override
-            public void onWifiListResult(List<ScanResult> results)
-            {
+            public void onWifiListResult(List<ScanResult> results) {
                 list_wifi = results;
             }
 
             @Override
-            public void onWifiState(String states)
-            {
+            public void onWifiState(String states) {
                 tv_wifiConnect.setText(states);
             }
 
             @Override
-            public void onWifiConnecting(String states)
-            {
+            public void onWifiConnecting(String states) {
                 tv_wifiConnect.setText(states);
             }
         };
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         registerReceiver(wifiAPBroadcastReceiver, wifiAPBroadcastReceiver.getFilter());
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(wifiAPBroadcastReceiver);
     }
 
-    private void viewInit()
-    {
+    private void viewInit() {
         tv_status = (TextView) findViewById(R.id.textView);
         tv_wifiConnect = (TextView) findViewById(R.id.textView2);
 
 
     }
 
-    public void onClick(View view)
-    {
+    public void onClick(View view) {
         switch (view.getId())
         {
             case R.id.button:                   //开启热点
@@ -133,24 +123,27 @@ public class Main2Activity extends AppCompatActivity
                 }
                 break;
             case R.id.button3:                  //搜索热点
+                Main2ActivityPermissionsDispatcher.needLocationWithCheck(this);
                 wifiAdmin.startScan();
                 break;
             case R.id.button4:                  //连接热点
-                for (ScanResult result : list_wifi)
+                wifiAdmin.isExsits("");
+                if (list_wifi != null)
                 {
-                    if (result.BSSID.equals("HSRG2"))
+                    for (ScanResult result : list_wifi)
                     {
-                        //加密方式
-                        String capabliities = result.capabilities;
-
-                        WifiConfiguration configuration = wifiAdmin.isExsits("HSRG2");
-                        if (configuration == null)
+                        if (result.SSID.equals("wireless-znsx-5B"))
                         {
-                            WifiConfiguration config = wifiAdmin.createWifiCfg("HSRG2", "HSRG8888", 3);
-                            wifiAdmin.connect(config);
-                        } else
-                        {
-                            wifiAdmin.connect(configuration);
+                            WifiConfiguration config = wifiAdmin.isExsits(result.SSID);
+                            if (config == null)
+                            {
+                                config = wifiAdmin.createConnectWifiCfg(result, "Y690H99Z5C");
+                                wifiAdmin.addNetwork(config);
+                            } else
+                            {
+                                wifiAdmin.addNetwork(config);
+                            }
+                            return;
                         }
                     }
                 }
@@ -161,8 +154,7 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 初始化热点
      */
-    private void wifiInit()
-    {
+    private void wifiInit() {
         WifiConfiguration configuration = wifiAdmin.createWifiCfg("wireless-znsx-5B", "Y690H99Z5C", 3);
         if (!wifiAdmin.openWifiAP(configuration))
         {
@@ -176,27 +168,24 @@ public class Main2Activity extends AppCompatActivity
 
 
     @NeedsPermission(Manifest.permission.WRITE_SETTINGS)
-    void needSettings()
-    {
+    void needSettings() {
         wifiInit();
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    void needLocation()
-    {
+    void needLocation() {
     }
 
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Main2ActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         Main2ActivityPermissionsDispatcher.onActivityResult(this, requestCode);

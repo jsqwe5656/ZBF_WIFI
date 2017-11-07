@@ -83,6 +83,7 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
         } else if (action.equals(ACTION_NETWORK_STATE_CHANGED_ACTION))
         {
             NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+            Log.e("zbf","ACTION_NETWORK_STATE_CHANGED_ACTION:" + info.toString());
             if (info.getState().equals(NetworkInfo.State.DISCONNECTED))
             {
                 onWifiState("连接已断开");

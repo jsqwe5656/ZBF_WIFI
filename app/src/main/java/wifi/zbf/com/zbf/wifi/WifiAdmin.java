@@ -5,6 +5,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,17 +53,16 @@ public class WifiAdmin
      * @param str 热点名称
      */
     public WifiConfiguration isExsits(String str) {
-        List<WifiConfiguration> list = mWifiManager.getConfiguredNetworks();
-        if (list == null)
-            return null;
-        Iterator<WifiConfiguration> localIterator = list.iterator();
-        WifiConfiguration localWifiConfiguration;
-        do
+        List<WifiConfiguration> existingConfigs = mWifiManager.getConfiguredNetworks();
+        for (WifiConfiguration existingConfig : existingConfigs)
         {
-            if (!localIterator.hasNext()) return null;
-            localWifiConfiguration = localIterator.next();
-        } while (!localWifiConfiguration.SSID.equals(str));
-        return localWifiConfiguration;
+            Log.e("zbf","isExsits:" + existingConfig.SSID);
+            if (existingConfig.SSID.equals("\"" + str + "\""))
+            {
+                return existingConfig;
+            }
+        }
+        return null;
     }
 
     /**
@@ -122,9 +122,12 @@ public class WifiAdmin
     public void addNetwork(WifiConfiguration wf) {
         //连接新的连接
         int netId = mWifiManager.addNetwork(wf);
-        mWifiManager.enableNetwork(netId, true);
-        mWifiManager.saveConfiguration();
-        mWifiManager.reconnect();
+        Log.e("zbf", "netID:" + netId);
+        boolean b = mWifiManager.enableNetwork(netId, true);
+        Log.e("zbf", "connect:" + b);
+
+//        mWifiManager.saveConfiguration();
+//        mWifiManager.reconnect();
     }
 
     /**
@@ -186,6 +189,61 @@ public class WifiAdmin
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
             config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
             config.status = WifiConfiguration.Status.ENABLED;
+        }
+        return config;
+    }
+
+    /**
+     * 创建将要链接的wificonfig
+     */
+    public WifiConfiguration createConnectWifiCfg(ScanResult scan, String Password) {
+        WifiConfiguration config = new WifiConfiguration();
+        config.hiddenSSID = false;
+        config.SSID = scan.SSID;
+        config.status = WifiConfiguration.Status.ENABLED;
+        if (scan.capabilities.contains("WPA"))
+        {
+            config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+            config.preSharedKey = "\"".concat(Password).concat("\"");
+
+        } else if (scan.capabilities.contains("WEP"))
+        {
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+
+            config.wepKeys[0] = Password;
+            config.wepTxKeyIndex = 0;
+
+        } else
+        {
+            config.preSharedKey = null;
+            config.wepKeys[0] = "\"" + "\"";
+            config.wepTxKeyIndex = 0;
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            config.allowedAuthAlgorithms.clear();
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
         }
         return config;
     }
@@ -312,9 +370,15 @@ public class WifiAdmin
     /**
      * 连接热点
      */
-    public void connect(WifiConfiguration  configuration)
-    {
+    public void connect(WifiConfiguration configuration) {
         int wcgID = mWifiManager.addNetwork(configuration);
         mWifiManager.enableNetwork(wcgID, true);
+    }
+
+    /**
+     * 连接配置好指定ID的网络
+     */
+    public void connectExsits() {
+
     }
 }
