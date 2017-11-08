@@ -96,18 +96,18 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
             } else
             {
                 NetworkInfo.DetailedState state = info.getDetailedState();
-                if (state == state.CONNECTING)
+                if (state == NetworkInfo.DetailedState.CONNECTING)
                 {
-                    onWifiState("连接中...");
-                } else if (state == state.AUTHENTICATING)
+                    onWifiConnecting("连接中...");
+                } else if (state == NetworkInfo.DetailedState.AUTHENTICATING)
                 {
-                    onWifiState("正在验证身份信息...");
-                } else if (state == state.OBTAINING_IPADDR)
+                    onWifiConnecting("正在验证身份信息...");
+                } else if (state == NetworkInfo.DetailedState.OBTAINING_IPADDR)
                 {
-                    onWifiState("正在获取IP地址...");
-                } else if (state == state.FAILED)
+                    onWifiConnecting("正在获取IP地址...");
+                } else if (state == NetworkInfo.DetailedState.FAILED)
                 {
-                    onWifiState("连接失败");
+                    onWifiConnecting("连接失败");
                 }
             }
         }

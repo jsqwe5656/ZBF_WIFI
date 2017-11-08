@@ -1,6 +1,7 @@
 package wifi.zbf.com.zbf.wifi;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +14,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -36,6 +38,12 @@ import java.util.concurrent.Executors;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
+import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTED;
+import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTING;
+import static wifi.zbf.com.zbf.wifi.PublicStatics.GET_MSG;
+import static wifi.zbf.com.zbf.wifi.PublicStatics.SEND_MSG_ERROR;
+import static wifi.zbf.com.zbf.wifi.PublicStatics.SEND_MSG_SUCCSEE;
+
 
 @RuntimePermissions
 public class Main2Activity extends AppCompatActivity
@@ -48,7 +56,41 @@ public class Main2Activity extends AppCompatActivity
     TextView tv_status;
     TextView tv_wifiConnect;
 
+    //通信端口号
+    private final int PORT = 62014;
+
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
+
+    private ConnectThread connectThread;
+    private ListenerThread listenerThread;
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what)
+            {
+                case DEVICE_CONNECTING:
+                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
+                    connectThread.start();
+                    break;
+                case DEVICE_CONNECTED:
+//                    textview.setText("设备连接成功");
+                    break;
+                case SEND_MSG_SUCCSEE:
+//                    textview.setText("发送消息成功:" + msg.getData().getString("MSG"));
+                    break;
+                case SEND_MSG_ERROR:
+//                    textview.setText("发送消息失败:" + msg.getData().getString("MSG"));
+                    break;
+                case GET_MSG:
+//                    textview.setText("收到消息:" + msg.getData().getString("MSG"));
+                    break;
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +103,8 @@ public class Main2Activity extends AppCompatActivity
         wifiAdmin = new WifiAdmin(this);
         receiverInit();
         viewInit();
+        listenerThread = new ListenerThread(7788,handler);
+        listenerThread.start();
     }
 
     /**
@@ -82,6 +126,10 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onWifiState(String states) {
                 tv_wifiConnect.setText(states);
+                if (states.startsWith("已连接到网络:wireless-znsx-5B"))
+                {
+                    handler.sendEmptyMessage(DEVICE_CONNECTING);
+                }
             }
 
             @Override

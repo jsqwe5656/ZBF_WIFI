@@ -9,19 +9,20 @@
     <!--阻止wifi进入睡眠状态，使wifi一直处于活跃状态-->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!--写入权限-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <!--定位权限-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!--查看网络状态-->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <!--读取系统设置-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <!--更改系统设置-->
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <!--联网权限-->
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 
     <application
@@ -32,11 +33,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--<activity android:name=".MainActivity">-->
-            <!--&lt;!&ndash;<intent-filter>&ndash;&gt;-->
-            <!--&lt;!&ndash;<action android:name="android.intent.action.MAIN"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;<intent-filter>&ndash;&gt;-->
+        <!--&lt;!&ndash;<action android:name="android.intent.action.MAIN"/>&ndash;&gt;-->
 
-            <!--&lt;!&ndash;<category android:name="android.intent.category.LAUNCHER"/>&ndash;&gt;-->
-            <!--&lt;!&ndash;</intent-filter>&ndash;&gt;-->
+        <!--&lt;!&ndash;<category android:name="android.intent.category.LAUNCHER"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;</intent-filter>&ndash;&gt;-->
         <!--</activity>-->
         <activity
             android:name=".Main2Activity"
