@@ -1,4 +1,4 @@
-package wifi.zbf.com.zbf.wifi;
+package wifi.zbf.com.zbf.wifi.sockets;
 
 import android.os.Handler;
 import android.os.Message;
@@ -6,6 +6,8 @@ import android.os.Message;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import wifi.zbf.com.zbf.wifi.PublicStatics;
 
 /**
  * 监听线程
@@ -24,7 +26,7 @@ public class ListenerThread extends Thread
         this.handler = handler;
         try
         {
-            serverSocket = new ServerSocket(port,0);
+            serverSocket = new ServerSocket(port);
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -41,7 +43,7 @@ public class ListenerThread extends Thread
                 //阻塞，等待设备连接
                 socket = serverSocket.accept();
                 Message message = Message.obtain();
-//                message.what = MainActivity.DEVICE_CONNECTING;
+                message.what = PublicStatics.DEVICE_CONNECTING;
                 handler.sendMessage(message);
             } catch (IOException e)
             {

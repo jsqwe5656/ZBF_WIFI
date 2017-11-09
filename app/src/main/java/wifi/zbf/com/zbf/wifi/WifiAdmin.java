@@ -7,8 +7,11 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,12 +57,15 @@ public class WifiAdmin
      */
     public WifiConfiguration isExsits(String str) {
         List<WifiConfiguration> existingConfigs = mWifiManager.getConfiguredNetworks();
-        for (WifiConfiguration existingConfig : existingConfigs)
+        if (existingConfigs != null)
         {
-            Log.e("zbf","isExsits:" + existingConfig.SSID);
-            if (existingConfig.SSID.equals("\"" + str + "\""))
+            for (WifiConfiguration existingConfig : existingConfigs)
             {
-                return existingConfig;
+//            Log.e("zbf", "isExsits:" + existingConfig.SSID);
+                if (existingConfig.SSID.equals("\"" + str + "\""))
+                {
+                    return existingConfig;
+                }
             }
         }
         return null;
@@ -381,4 +387,33 @@ public class WifiAdmin
     public void connectExsits() {
 
     }
+
+    /**
+     * 获取连接到热点上的手机ip
+     *
+     * @return
+     */
+    public ArrayList<String> getConnectedIP() {
+        ArrayList<String> connectedIP = new ArrayList<String>();
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(
+                    "/proc/net/arp"));
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String[] splitted = line.split(" +");
+                if (splitted != null && splitted.length >= 4)
+                {
+                    String ip = splitted[0];
+                    connectedIP.add(ip);
+                }
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return connectedIP;
+    }
+
 }

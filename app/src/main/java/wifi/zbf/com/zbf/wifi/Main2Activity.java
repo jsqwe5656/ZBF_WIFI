@@ -2,41 +2,27 @@ package wifi.zbf.com.zbf.wifi;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
+import wifi.zbf.com.zbf.wifi.sockets.ConnectThread;
+import wifi.zbf.com.zbf.wifi.sockets.ListenerThread;
 
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTED;
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTING;
@@ -56,6 +42,8 @@ public class Main2Activity extends AppCompatActivity
     TextView tv_status;
     TextView tv_wifiConnect;
 
+    EditText et_msg;
+
     //通信端口号
     private final int PORT = 62014;
 
@@ -69,25 +57,33 @@ public class Main2Activity extends AppCompatActivity
     {
         @Override
         public void handleMessage(Message msg) {
+            Bundle bundle = msg.getData();
+            String text = null;
             switch (msg.what)
             {
-                case DEVICE_CONNECTING:
+                case DEVICE_CONNECTING:                                                     //设备开始连接
                     connectThread = new ConnectThread(listenerThread.getSocket(), handler);
                     connectThread.start();
+                    text = "开启通信线程";
                     break;
-                case DEVICE_CONNECTED:
-//                    textview.setText("设备连接成功");
+                case DEVICE_CONNECTED:                                                      //设备连接成功
+                    text = "设备连接成功,IP：" + wifiAdmin.getConnectedIP();
+//                    tv_wifiConnect.setText();
                     break;
-                case SEND_MSG_SUCCSEE:
-//                    textview.setText("发送消息成功:" + msg.getData().getString("MSG"));
+                case SEND_MSG_SUCCSEE:                                                      //发送消息成功
+                    text = "发送消息成功:" + bundle.getString("MSG");
+//                    tv_wifiConnect.setText("发送消息成功:" + bundle.getString("MSG"));
                     break;
-                case SEND_MSG_ERROR:
-//                    textview.setText("发送消息失败:" + msg.getData().getString("MSG"));
+                case SEND_MSG_ERROR:                                                        //发送消息失败
+                    text = "发送消息失败:" + bundle.getString("MSG");
+//                    tv_wifiConnect.setText();
                     break;
-                case GET_MSG:
-//                    textview.setText("收到消息:" + msg.getData().getString("MSG"));
+                case GET_MSG:                                                               //收到消息
+                    text = "收到来自" + bundle.get("IP") + "消息:" + bundle.getString("MSG") + "时间:" + System.currentTimeMillis();
+//                    tv_wifiConnect.setText(text);
                     break;
             }
+            Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -103,8 +99,6 @@ public class Main2Activity extends AppCompatActivity
         wifiAdmin = new WifiAdmin(this);
         receiverInit();
         viewInit();
-        listenerThread = new ListenerThread(7788,handler);
-        listenerThread.start();
     }
 
     /**
@@ -116,6 +110,12 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onWifiApEnabled(String wifiStates) {
                 tv_status.setText(wifiStates);
+                if (wifiStates.equals("已开启"))
+                {
+                    //启动监听
+                    listenerThread = new ListenerThread(PORT, handler);
+                    listenerThread.start();
+                }
             }
 
             @Override
@@ -126,7 +126,7 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onWifiState(String states) {
                 tv_wifiConnect.setText(states);
-                if (states.startsWith("已连接到网络:wireless-znsx-5B"))
+                if (states.startsWith("已连接到网络:wireless-znsx-5B") || states.startsWith("已连接到网络:" + "\"" + "wireless-znsx-5B" + "\""))
                 {
                     handler.sendEmptyMessage(DEVICE_CONNECTING);
                 }
@@ -154,7 +154,7 @@ public class Main2Activity extends AppCompatActivity
     private void viewInit() {
         tv_status = (TextView) findViewById(R.id.textView);
         tv_wifiConnect = (TextView) findViewById(R.id.textView2);
-
+        et_msg = (EditText) findViewById(R.id.et_msg);
 
     }
 
@@ -175,27 +175,37 @@ public class Main2Activity extends AppCompatActivity
                 wifiAdmin.startScan();
                 break;
             case R.id.button4:                  //连接热点
-                wifiAdmin.isExsits("");
-                if (list_wifi != null)
-                {
-                    for (ScanResult result : list_wifi)
-                    {
-                        if (result.SSID.equals("wireless-znsx-5B"))
-                        {
-                            WifiConfiguration config = wifiAdmin.isExsits(result.SSID);
-                            if (config == null)
-                            {
-                                config = wifiAdmin.createConnectWifiCfg(result, "Y690H99Z5C");
-                                wifiAdmin.addNetwork(config);
-                            } else
-                            {
-                                wifiAdmin.addNetwork(config);
-                            }
-                            return;
-                        }
-                    }
-                }
+                connect2Hot();
                 break;
+            case R.id.btn_send:                     //发送消息
+                String sendText = et_msg.getText().toString() + "";
+                connectThread.sendData(sendText);
+                break;
+        }
+    }
+
+    /**
+     * 连接到热点
+     */
+    private void connect2Hot() {
+        if (list_wifi != null)
+        {
+            for (ScanResult result : list_wifi)
+            {
+                if (result.SSID.equals("\"" + "wireless-znsx-5B" + "\"") || result.SSID.equals("wireless-znsx-5B"))
+                {
+                    WifiConfiguration config = wifiAdmin.isExsits(result.SSID);
+                    if (config == null)
+                    {
+                        config = wifiAdmin.createConnectWifiCfg(result, "Y690H99Z5C");
+                        wifiAdmin.addNetwork(config);
+                    } else
+                    {
+                        wifiAdmin.addNetwork(config);
+                    }
+                    return;
+                }
+            }
         }
     }
 

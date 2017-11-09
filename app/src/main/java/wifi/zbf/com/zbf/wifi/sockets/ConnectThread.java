@@ -1,4 +1,4 @@
-package wifi.zbf.com.zbf.wifi;
+package wifi.zbf.com.zbf.wifi.sockets;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import wifi.zbf.com.zbf.wifi.PublicStatics;
 
 /**
  * 连接线程
@@ -20,7 +22,7 @@ public class ConnectThread extends Thread
     private InputStream inputStream;
     private OutputStream outputStream;
 
-    public ConnectThread(Socket socket, Handler handler){
+    public ConnectThread(Socket socket, Handler handler) {
         setName("ConnectThread");
         this.socket = socket;
         this.handler = handler;
@@ -28,33 +30,40 @@ public class ConnectThread extends Thread
 
     @Override
     public void run() {
-        if(socket==null){
+        if (socket == null)
+        {
             return;
         }
-//        handler.sendEmptyMessage(MainActivity.DEVICE_CONNECTED);
-        try {
+        handler.sendEmptyMessage(PublicStatics.DEVICE_CONNECTED);
+        try
+        {
             //获取数据流
             inputStream = socket.getInputStream();
             outputStream = socket.getOutputStream();
 
             byte[] buffer = new byte[1024];
             int bytes;
-            while (true){
+            while (true)
+            {
                 //读取数据
                 bytes = inputStream.read(buffer);
-                if (bytes > 0) {
+                if (bytes > 0)
+                {
                     final byte[] data = new byte[bytes];
                     System.arraycopy(buffer, 0, data, 0, bytes);
 
                     Message message = Message.obtain();
-//                    message.what = MainActivity.GET_MSG;
+                    message.what = PublicStatics.GET_MSG;
+
                     Bundle bundle = new Bundle();
-                    bundle.putString("MSG",new String(data));
+                    bundle.putString("MSG", new String(data));
+                    bundle.putString("IP", socket.getInetAddress() + "");
                     message.setData(bundle);
                     handler.sendMessage(message);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             e.printStackTrace();
         }
     }
@@ -62,22 +71,25 @@ public class ConnectThread extends Thread
     /**
      * 发送数据
      */
-    public void sendData(String msg){
-        if(outputStream!=null){
-            try {
+    public void sendData(String msg) {
+        if (outputStream != null)
+        {
+            try
+            {
                 outputStream.write(msg.getBytes());
                 Message message = Message.obtain();
-//                message.what = MainActivity.SEND_MSG_SUCCSEE;
+                message.what = PublicStatics.SEND_MSG_SUCCSEE;
                 Bundle bundle = new Bundle();
-                bundle.putString("MSG",new String(msg));
+                bundle.putString("MSG", new String(msg));
                 message.setData(bundle);
                 handler.sendMessage(message);
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
                 Message message = Message.obtain();
-//                message.what = MainActivity.SEND_MSG_ERROR;
+                message.what = PublicStatics.SEND_MSG_ERROR;
                 Bundle bundle = new Bundle();
-                bundle.putString("MSG",new String(msg));
+                bundle.putString("MSG", new String(msg));
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
