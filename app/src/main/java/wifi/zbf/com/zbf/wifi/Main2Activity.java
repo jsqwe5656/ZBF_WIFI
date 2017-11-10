@@ -49,7 +49,7 @@ public class Main2Activity extends AppCompatActivity
 
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
-    private ConnectThread connectThread;
+    public static ConnectThread connectThread;
     private ListenerThread listenerThread;
 
     @SuppressLint("HandlerLeak")
@@ -62,25 +62,21 @@ public class Main2Activity extends AppCompatActivity
             switch (msg.what)
             {
                 case DEVICE_CONNECTING:                                                     //设备开始连接
-                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
-                    connectThread.start();
+//                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
+//                    connectThread.start();
                     text = "开启通信线程";
                     break;
                 case DEVICE_CONNECTED:                                                      //设备连接成功
                     text = "设备连接成功,IP：" + wifiAdmin.getConnectedIP();
-//                    tv_wifiConnect.setText();
                     break;
                 case SEND_MSG_SUCCSEE:                                                      //发送消息成功
                     text = "发送消息成功:" + bundle.getString("MSG");
-//                    tv_wifiConnect.setText("发送消息成功:" + bundle.getString("MSG"));
                     break;
                 case SEND_MSG_ERROR:                                                        //发送消息失败
                     text = "发送消息失败:" + bundle.getString("MSG");
-//                    tv_wifiConnect.setText();
                     break;
                 case GET_MSG:                                                               //收到消息
                     text = "收到来自" + bundle.get("IP") + "消息:" + bundle.getString("MSG") + "时间:" + System.currentTimeMillis();
-//                    tv_wifiConnect.setText(text);
                     break;
             }
             Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
@@ -112,9 +108,12 @@ public class Main2Activity extends AppCompatActivity
                 tv_status.setText(wifiStates);
                 if (wifiStates.equals("已开启"))
                 {
-                    //启动监听
-                    listenerThread = new ListenerThread(PORT, handler);
-                    listenerThread.start();
+                    if (listenerThread == null)
+                    {
+                        //启动监听
+                        listenerThread = new ListenerThread(PORT, handler);
+                        listenerThread.start();
+                    }
                 }
             }
 
@@ -128,6 +127,12 @@ public class Main2Activity extends AppCompatActivity
                 tv_wifiConnect.setText(states);
                 if (states.startsWith("已连接到网络:wireless-znsx-5B") || states.startsWith("已连接到网络:" + "\"" + "wireless-znsx-5B" + "\""))
                 {
+                    if (listenerThread == null)
+                    {
+                        //启动监听
+                        listenerThread = new ListenerThread(PORT, handler);
+                        listenerThread.start();
+                    }
                     handler.sendEmptyMessage(DEVICE_CONNECTING);
                 }
             }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import wifi.zbf.com.zbf.wifi.Main2Activity;
 import wifi.zbf.com.zbf.wifi.PublicStatics;
 
 /**
@@ -27,7 +28,8 @@ public class ListenerThread extends Thread
         try
         {
             serverSocket = new ServerSocket(port);
-        } catch (IOException e)
+            Main2Activity.connectThread.start();
+        } catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -40,14 +42,15 @@ public class ListenerThread extends Thread
         {
             try
             {
-                //阻塞，等待设备连接
-                socket = serverSocket.accept();
                 Message message = Message.obtain();
                 message.what = PublicStatics.DEVICE_CONNECTING;
                 handler.sendMessage(message);
-            } catch (IOException e)
+                //阻塞，等待设备连接
+                socket = serverSocket.accept();
+            } catch (Exception e)
             {
                 e.printStackTrace();
+                return;
             }
         }
     }
