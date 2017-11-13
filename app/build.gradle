@@ -42,4 +42,6 @@ dependencies {
     kapt 'com.github.hotchemi:permissionsdispatcher-processor:2.4.0'
     compile('com.github.hotchemi:permissionsdispatcher:2.4.0') { exclude module: 'support-v13' }
     kapt 'com.github.hotchemi:permissionsdispatcher-processor:2.4.0'
+
+    compile 'io.netty:netty-all:5.0.0.Alpha2'
 }

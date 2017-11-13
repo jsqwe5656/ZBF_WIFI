@@ -1,6 +1,7 @@
 package wifi.zbf.com.zbf.wifi;
 
 import android.content.Context;
+import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -11,7 +12,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -414,6 +419,63 @@ public class WifiAdmin
             e.printStackTrace();
         }
         return connectedIP;
+    }
+
+    /***
+     * 得到开启热点后的IP地址
+     */
+    public String getWifiApIpAddress() {
+        try
+        {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); )
+            {
+                NetworkInterface intf = en.nextElement();
+                if (intf.getName().contains("wlan"))
+                {
+                    for (Enumeration<InetAddress> enumIpAddr = intf
+                            .getInetAddresses(); enumIpAddr.hasMoreElements(); )
+                    {
+                        InetAddress inetAddress = enumIpAddr.nextElement();
+                        if (!inetAddress.isLoopbackAddress()
+                                && (inetAddress.getAddress().length == 4))
+                        {
+                            Log.d("zbf", inetAddress.getHostAddress());
+                            return inetAddress.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex)
+        {
+            Log.e("zbf", ex.toString());
+        }
+        return null;
+    }
+
+    /**
+     * 获取网关
+     */
+    public String getGateWay() {
+        DhcpInfo di = mWifiManager.getDhcpInfo();
+        long getewayIpL = di.gateway;
+        String getwayIpS = long2ip(getewayIpL);//网关地址
+        long netmaskIpL = di.netmask;
+        String netmaskIpS = long2ip(netmaskIpL);//子网掩码地址
+
+        Log.e("zbf", "网关：" + getwayIpS + ",子网掩码" + netmaskIpS);
+        return getwayIpS;
+    }
+
+    String long2ip(long ip) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(String.valueOf((int) (ip & 0xff)));
+        sb.append('.');
+        sb.append(String.valueOf((int) ((ip >> 8) & 0xff)));
+        sb.append('.');
+        sb.append(String.valueOf((int) ((ip >> 16) & 0xff)));
+        sb.append('.');
+        sb.append(String.valueOf((int) ((ip >> 24) & 0xff)));
+        return sb.toString();
     }
 
 }

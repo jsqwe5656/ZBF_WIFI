@@ -28,7 +28,7 @@ public class ListenerThread extends Thread
         try
         {
             serverSocket = new ServerSocket(port);
-            Main2Activity.connectThread.start();
+//            Main2Activity.connectThread.start();
         } catch (Exception e)
         {
             e.printStackTrace();

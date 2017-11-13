@@ -2,9 +2,12 @@ package wifi.zbf.com.zbf.wifi;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,8 +24,10 @@ import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
+import wifi.zbf.com.zbf.wifi.sockets.Client;
 import wifi.zbf.com.zbf.wifi.sockets.ConnectThread;
 import wifi.zbf.com.zbf.wifi.sockets.ListenerThread;
+import wifi.zbf.com.zbf.wifi.sockets.Server;
 
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTED;
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTING;
@@ -49,8 +54,12 @@ public class Main2Activity extends AppCompatActivity
 
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
-    public static ConnectThread connectThread;
-    private ListenerThread listenerThread;
+//    public static ConnectThread connectThread;
+//    private ListenerThread listenerThread;
+    private Server listenerThread;
+    private Client connectThread;
+
+
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
@@ -64,6 +73,7 @@ public class Main2Activity extends AppCompatActivity
                 case DEVICE_CONNECTING:                                                     //设备开始连接
 //                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
 //                    connectThread.start();
+                    connectThread = new Client(wifiAdmin.getGateWay(),PORT);
                     text = "开启通信线程";
                     break;
                 case DEVICE_CONNECTED:                                                      //设备连接成功
@@ -108,12 +118,16 @@ public class Main2Activity extends AppCompatActivity
                 tv_status.setText(wifiStates);
                 if (wifiStates.equals("已开启"))
                 {
-                    if (listenerThread == null)
+/*                    if (listenerThread == null)
                     {
                         //启动监听
                         listenerThread = new ListenerThread(PORT, handler);
                         listenerThread.start();
-                    }
+                    }*/
+                    listenerThread = new Server(PORT);
+                    listenerThread.run();
+                    Log.e("zbf","ipAdress:" + wifiAdmin.getWifiApIpAddress());
+
                 }
             }
 
@@ -127,13 +141,14 @@ public class Main2Activity extends AppCompatActivity
                 tv_wifiConnect.setText(states);
                 if (states.startsWith("已连接到网络:wireless-znsx-5B") || states.startsWith("已连接到网络:" + "\"" + "wireless-znsx-5B" + "\""))
                 {
-                    if (listenerThread == null)
+/*                    if (listenerThread == null)
                     {
                         //启动监听
                         listenerThread = new ListenerThread(PORT, handler);
                         listenerThread.start();
-                    }
+                    }*/
                     handler.sendEmptyMessage(DEVICE_CONNECTING);
+                    wifiAdmin.getGateWay();
                 }
             }
 
@@ -184,7 +199,7 @@ public class Main2Activity extends AppCompatActivity
                 break;
             case R.id.btn_send:                     //发送消息
                 String sendText = et_msg.getText().toString() + "";
-                connectThread.sendData(sendText);
+//                connectThread.sendData(sendText);
                 break;
         }
     }

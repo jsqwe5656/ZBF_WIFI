@@ -90,7 +90,6 @@ public abstract class WifiAPBroadcastReceiver extends BroadcastReceiver
                 final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                 Log.e("zbf",wifiInfo.toString() + "," + wifiInfo.getSSID());
                 onWifiState("已连接到网络:" + wifiInfo.getSSID() );
-
             } else
             {
                 NetworkInfo.DetailedState state = info.getDetailedState();
