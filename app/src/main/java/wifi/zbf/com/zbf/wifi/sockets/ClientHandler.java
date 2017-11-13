@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
 
 /**
- * 客户端数据处理类
+ * 客户端收到返回数据
  * Created by hs-301 on 2017/11/13.
  */
 public class ClientHandler extends ChannelHandlerAdapter

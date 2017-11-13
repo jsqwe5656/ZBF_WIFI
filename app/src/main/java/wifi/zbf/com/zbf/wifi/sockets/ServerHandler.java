@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- *  服务端数据处理类
+ *  服务端读取收到数据
  * Created by hs-301 on 2017/11/13.
  */
 public class ServerHandler extends ChannelHandlerAdapter

@@ -1,5 +1,7 @@
 package wifi.zbf.com.zbf.wifi.sockets;
 
+import android.os.Handler;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -15,18 +17,51 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  */
 public class Client
 {
-    public Client(String ipAdress, int port) {
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(workerGroup)
-                .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<SocketChannel>()
-                {
-                    @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new ClientHandler());
-                    }
-                });
+    private Handler handler;
+    private String ipAdress;
+    private int port;
+    private Bootstrap bootstrap;
+    private EventLoopGroup workerGroup;
+
+    public Client(String ipAdress, int port, Handler handler)
+    {
+        this.handler = handler;
+        this.ipAdress = ipAdress;
+        this.port = port;
+        clientInit();
+    }
+
+    /**
+     * 初始化客户端
+     */
+    private void clientInit()
+    {
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                workerGroup = new NioEventLoopGroup();
+                bootstrap = new Bootstrap();
+                bootstrap.group(workerGroup)
+                        .channel(NioSocketChannel.class)
+                        .handler(new ChannelInitializer<SocketChannel>()
+                        {
+                            @Override
+                            protected void initChannel(SocketChannel socketChannel) throws Exception
+                            {
+                                socketChannel.pipeline().addLast(new ClientHandler());
+                            }
+                        });
+            }
+        }).start();
+    }
+
+    /**
+     * 发送信息
+     */
+    public boolean sendMessage(String msg)
+    {
         ChannelFuture future = null;
         try
         {
@@ -38,6 +73,7 @@ public class Client
         {
             e.printStackTrace();
         }
+        return false;
     }
 
 

@@ -16,14 +16,18 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class Server
 {
     private int port;
+    EventLoopGroup bossGroup;
+    EventLoopGroup workerGroup;
 
-    public Server(int port) {
+    public Server(int port)
+    {
         this.port = port;
     }
 
-    public void run() {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(); //用于处理服务器端接收客户端连接
-        EventLoopGroup workerGroup = new NioEventLoopGroup(); //进行网络通信（读写）
+    public void run()
+    {
+        bossGroup = new NioEventLoopGroup(); //用于处理服务器端接收客户端连接
+        workerGroup = new NioEventLoopGroup(); //进行网络通信（读写）
         try
         {
             ServerBootstrap bootstrap = new ServerBootstrap(); //辅助工具类，用于服务器通道的一系列配置
@@ -32,7 +36,8 @@ public class Server
                     .childHandler(new ChannelInitializer<SocketChannel>()
                     { //配置具体的数据处理方式
                         @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        protected void initChannel(SocketChannel socketChannel) throws Exception
+                        {
                             socketChannel.pipeline().addLast(new ServerHandler());
                         }
                     })
@@ -60,6 +65,23 @@ public class Server
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+
+    /**
+     * 关闭通信
+     */
+    public boolean close()
+    {
+        try
+        {
+            bossGroup.close();
+            workerGroup.close();
+            return true;
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 
