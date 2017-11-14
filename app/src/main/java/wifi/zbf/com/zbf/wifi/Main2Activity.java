@@ -54,26 +54,25 @@ public class Main2Activity extends AppCompatActivity
 
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
-    //    public static ConnectThread connectThread;
-//    private ListenerThread listenerThread;
-    private Server listenerThread;
-    private Client connectThread;
+    public static ConnectThread connectThread;
+    private ListenerThread listenerThread;
+//    private Server listenerThread;
+//    private Client connectThread;
 
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
     {
         @Override
-        public void handleMessage(Message msg)
-        {
+        public void handleMessage(Message msg) {
             Bundle bundle = msg.getData();
             String text = null;
             switch (msg.what)
             {
                 case DEVICE_CONNECTING:                                                     //设备开始连接
-//                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
-//                    connectThread.start();
-                    connectThread = new Client(wifiAdmin.getGateWay(), PORT, handler);
+                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
+                    connectThread.start();
+//                    connectThread = new Client(wifiAdmin.getGateWay(), PORT, handler);
 
                     text = "开启通信线程";
                     break;
@@ -96,8 +95,7 @@ public class Main2Activity extends AppCompatActivity
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.savedInstanceState = savedInstanceState;
         setContentView(R.layout.activity_main2);
@@ -112,54 +110,51 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 广播初始化
      */
-    private void receiverInit()
-    {
+    private void receiverInit() {
         wifiAPBroadcastReceiver = new WifiAPBroadcastReceiver(wifiAdmin)
         {
             @Override
-            public void onWifiApEnabled(String wifiStates)
-            {
+            public void onWifiApEnabled(String wifiStates) {
                 tv_status.setText(wifiStates);
                 if (wifiStates.equals("已开启"))
                 {
-/*                    if (listenerThread == null)
+                    if (listenerThread == null)
                     {
                         //启动监听
                         listenerThread = new ListenerThread(PORT, handler);
                         listenerThread.start();
-                    }*/
-                    listenerThread = new Server(PORT);
-                    new Thread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            listenerThread.run();
-                        }
-                    }).start();
+                    }
+
+//                    new Thread(new Runnable()
+//                    {
+//                        @Override
+//                        public void run() {
+////                            listenerThread.run();
+//                            listenerThread = new Server(PORT);
+//                            listenerThread.bind();
+//                        }
+//                    }).start();
 
                     Log.e("zbf", "ipAdress:" + wifiAdmin.getWifiApIpAddress());
-
+//                    wifiAdmin.getGateWay();
                 }
                 if (wifiStates.equals("已关闭"))
                 {
-                    if (listenerThread != null)
-                    {
-                        listenerThread.close();
-                        listenerThread = null;
-                    }
+//                    if (listenerThread != null)
+//                    {
+//                        listenerThread.close();
+//                        listenerThread = null;
+//                    }
                 }
             }
 
             @Override
-            public void onWifiListResult(List<ScanResult> results)
-            {
+            public void onWifiListResult(List<ScanResult> results) {
                 list_wifi = results;
             }
 
             @Override
-            public void onWifiState(String states)
-            {
+            public void onWifiState(String states) {
                 tv_wifiConnect.setText(states);
                 if (states.startsWith("已连接到网络:wireless-znsx-5B") || states.startsWith("已连接到网络:" + "\"" + "wireless-znsx-5B" + "\""))
                 {
@@ -175,37 +170,32 @@ public class Main2Activity extends AppCompatActivity
             }
 
             @Override
-            public void onWifiConnecting(String states)
-            {
+            public void onWifiConnecting(String states) {
                 tv_wifiConnect.setText(states);
             }
         };
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         registerReceiver(wifiAPBroadcastReceiver, wifiAPBroadcastReceiver.getFilter());
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(wifiAPBroadcastReceiver);
     }
 
-    private void viewInit()
-    {
+    private void viewInit() {
         tv_status = (TextView) findViewById(R.id.textView);
         tv_wifiConnect = (TextView) findViewById(R.id.textView2);
         et_msg = (EditText) findViewById(R.id.et_msg);
 
     }
 
-    public void onClick(View view)
-    {
+    public void onClick(View view) {
         switch (view.getId())
         {
             case R.id.button:                   //开启热点
@@ -226,8 +216,8 @@ public class Main2Activity extends AppCompatActivity
                 break;
             case R.id.btn_send:                     //发送消息
                 String sendText = et_msg.getText().toString() + "";
-                connectThread.sendMessage(sendText);
-//                connectThread.sendData(sendText);
+//                connectThread.sendMessage(sendText);
+                connectThread.sendData(sendText);
                 break;
         }
     }
@@ -235,8 +225,7 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 连接到热点
      */
-    private void connect2Hot()
-    {
+    private void connect2Hot() {
         if (list_wifi != null)
         {
             for (ScanResult result : list_wifi)
@@ -261,8 +250,7 @@ public class Main2Activity extends AppCompatActivity
     /**
      * 初始化热点
      */
-    private void wifiInit()
-    {
+    private void wifiInit() {
         WifiConfiguration configuration = wifiAdmin.createWifiCfg("wireless-znsx-5B", "Y690H99Z5C", 3);
         if (!wifiAdmin.openWifiAP(configuration))
         {
@@ -276,28 +264,24 @@ public class Main2Activity extends AppCompatActivity
 
 
     @NeedsPermission(Manifest.permission.WRITE_SETTINGS)
-    void needSettings()
-    {
+    void needSettings() {
         wifiInit();
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    void needLocation()
-    {
+    void needLocation() {
     }
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Main2ActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         Main2ActivityPermissionsDispatcher.onActivityResult(this, requestCode);

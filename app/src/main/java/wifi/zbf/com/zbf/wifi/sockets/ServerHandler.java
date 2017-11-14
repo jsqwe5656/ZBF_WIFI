@@ -28,7 +28,8 @@ public class ServerHandler extends ChannelHandlerAdapter
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+    {
         cause.printStackTrace();
         ctx.close();
     }
