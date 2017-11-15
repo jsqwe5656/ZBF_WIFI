@@ -24,7 +24,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
@@ -32,16 +32,15 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2.2'
-
     compile('com.github.hotchemi:permissionsdispatcher:3.0.1') {
         // if you don't use android.app.Fragment you can exclude support for them
         exclude module: "support-v13"
     }
     annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:3.0.1"
-    compile('com.github.hotchemi:permissionsdispatcher:2.4.0')
+    compile 'com.github.hotchemi:permissionsdispatcher:2.4.0'
     kapt 'com.github.hotchemi:permissionsdispatcher-processor:2.4.0'
     compile('com.github.hotchemi:permissionsdispatcher:2.4.0') { exclude module: 'support-v13' }
     kapt 'com.github.hotchemi:permissionsdispatcher-processor:2.4.0'
-
     compile 'io.netty:netty-all:5.0.0.Alpha2'
+    implementation files('libs/protobuf-2.5.0.jar')
 }

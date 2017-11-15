@@ -44,8 +44,7 @@ public class Server
             bootstrap.childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override
-                protected void initChannel(SocketChannel socketChannel)
-                        throws Exception {
+                protected void initChannel(SocketChannel socketChannel) throws Exception {
                     ChannelPipeline p = socketChannel.pipeline();
                     p.addLast(new ServerHandler());
                 }

@@ -10,6 +10,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
@@ -28,6 +30,10 @@ import wifi.zbf.com.zbf.wifi.sockets.Client;
 import wifi.zbf.com.zbf.wifi.sockets.ConnectThread;
 import wifi.zbf.com.zbf.wifi.sockets.ListenerThread;
 import wifi.zbf.com.zbf.wifi.sockets.Server;
+import wifi.zbf.com.zbf.wifi.sockets2.NettyClient;
+import wifi.zbf.com.zbf.wifi.sockets2.NettyServer;
+import wifi.zbf.com.zbf.wifi.sockets2.OnServerConnectListener;
+import wifi.zbf.com.zbf.wifi.sockets2.ServerService;
 
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTED;
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTING;
@@ -54,8 +60,8 @@ public class Main2Activity extends AppCompatActivity
 
     private WifiAPBroadcastReceiver wifiAPBroadcastReceiver;
 
-    public static ConnectThread connectThread;
-    private ListenerThread listenerThread;
+//    public static ConnectThread connectThread;
+//    private ListenerThread listenerThread;
 //    private Server listenerThread;
 //    private Client connectThread;
 
@@ -70,26 +76,28 @@ public class Main2Activity extends AppCompatActivity
             switch (msg.what)
             {
                 case DEVICE_CONNECTING:                                                     //设备开始连接
-                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
-                    connectThread.start();
+//                    connectThread = new ConnectThread(listenerThread.getSocket(), handler);
+//                    connectThread.start();
 //                    connectThread = new Client(wifiAdmin.getGateWay(), PORT, handler);
-
-                    text = "开启通信线程";
+//                    text = "开启通信线程";
                     break;
                 case DEVICE_CONNECTED:                                                      //设备连接成功
                     text = "设备连接成功,IP：" + wifiAdmin.getConnectedIP();
+                    Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
                     break;
                 case SEND_MSG_SUCCSEE:                                                      //发送消息成功
                     text = "发送消息成功:" + bundle.getString("MSG");
+                    Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
                     break;
                 case SEND_MSG_ERROR:                                                        //发送消息失败
                     text = "发送消息失败:" + bundle.getString("MSG");
+                    Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
                     break;
                 case GET_MSG:                                                               //收到消息
                     text = "收到来自" + bundle.get("IP") + "消息:" + bundle.getString("MSG") + "时间:" + System.currentTimeMillis();
+                    Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
                     break;
             }
-            Toast.makeText(Main2Activity.this, text, Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -116,35 +124,14 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onWifiApEnabled(String wifiStates) {
                 tv_status.setText(wifiStates);
+                Intent intent = new Intent(Main2Activity.this, ServerService.class);
                 if (wifiStates.equals("已开启"))
                 {
-                    if (listenerThread == null)
-                    {
-                        //启动监听
-                        listenerThread = new ListenerThread(PORT, handler);
-                        listenerThread.start();
-                    }
-
-//                    new Thread(new Runnable()
-//                    {
-//                        @Override
-//                        public void run() {
-////                            listenerThread.run();
-//                            listenerThread = new Server(PORT);
-//                            listenerThread.bind();
-//                        }
-//                    }).start();
-
-                    Log.e("zbf", "ipAdress:" + wifiAdmin.getWifiApIpAddress());
-//                    wifiAdmin.getGateWay();
+                    startService(intent);
                 }
                 if (wifiStates.equals("已关闭"))
                 {
-//                    if (listenerThread != null)
-//                    {
-//                        listenerThread.close();
-//                        listenerThread = null;
-//                    }
+                    stopService(intent);
                 }
             }
 
@@ -158,12 +145,6 @@ public class Main2Activity extends AppCompatActivity
                 tv_wifiConnect.setText(states);
                 if (states.startsWith("已连接到网络:wireless-znsx-5B") || states.startsWith("已连接到网络:" + "\"" + "wireless-znsx-5B" + "\""))
                 {
-/*                    if (listenerThread == null)
-                    {
-                        //启动监听
-                        listenerThread = new ListenerThread(PORT, handler);
-                        listenerThread.start();
-                    }*/
                     handler.sendEmptyMessage(DEVICE_CONNECTING);
                     wifiAdmin.getGateWay();
                 }
@@ -215,12 +196,56 @@ public class Main2Activity extends AppCompatActivity
                 connect2Hot();
                 break;
             case R.id.btn_send:                     //发送消息
-                String sendText = et_msg.getText().toString() + "";
-//                connectThread.sendMessage(sendText);
-                connectThread.sendData(sendText);
+                final String sendText = et_msg.getText().toString() + "";
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run() {
+                        NettyClient.getInstance().send(sendText);
+                    }
+                }).start();
+                break;
+            case R.id.button5:
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run() {
+                        NettyClient.getInstance()
+                                .connect(new InetSocketAddress(wifiAdmin.getGateWay(), NettyServer.PORT_NUMBER), new OnServerConnectListener()
+                                {
+                                    @Override
+                                    public void onConnectSuccess() {
+                                        new Handler(Looper.getMainLooper()).post(new Runnable()
+                                        {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(Main2Activity.this, "connect success!", Toast.LENGTH_SHORT).show();
+                                                Log.e("zbf", "connect success!");
+                                            }
+                                        });
+
+                                    }
+
+                                    @Override
+                                    public void onConnectFailed() {
+                                        new Handler(Looper.getMainLooper()).post(new Runnable()
+                                        {
+                                            @Override
+                                            public void run() {
+                                                Log.e("zbf", "connect failed!");
+
+//                                                Toast.makeText(Main2Activity.this, "connect failed!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+
+                                    }
+                                });
+                    }
+                }).start();
                 break;
         }
     }
+
 
     /**
      * 连接到热点

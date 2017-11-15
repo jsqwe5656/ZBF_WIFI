@@ -1,36 +1,45 @@
 package wifi.zbf.com.zbf.wifi.sockets;
 
+import android.util.Log;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- *  服务端读取收到数据
+ * 服务端读取收到数据
  * Created by hs-301 on 2017/11/13.
  */
 public class ServerHandler extends ChannelHandlerAdapter
 {
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
-        //do something msg
-        ByteBuf buf = (ByteBuf)msg;
-        byte[] data = new byte[buf.readableBytes()];
-        buf.readBytes(data);
-        String request = new String(data, "utf-8");
-        System.out.println("Server: " + request);
-        //写给客户端
-        String response = "我是反馈的信息";
-        ctx.writeAndFlush(Unpooled.copiedBuffer("888".getBytes()));
-        //.addListener(ChannelFutureListener.CLOSE);
-
+    public void channelActive(ChannelHandlerContext ctx) {
+        System.out.println("channelActive!!!!!!!!!!!" + ctx.toString());
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        System.out.println("channelRead!!!!!!!!!!!!!!!!!!!!!!!" + ctx.toString() + msg.toString());
+//        ByteBuf buf = (ByteBuf) msg;
+        ctx.write(msg);
+        //System.out.println(buf.);
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        System.out.println("channelReadComplete!!!!!!!!!!!!!!!!!!!!!!!" + ctx.toString() + ctx.toString());
+        ctx.flush();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        System.out.println("exceptionCaught!!!!!!!!!!!!!!!!!!!!!!!" + ctx.toString() + cause.toString());
+        // Close the connection when an exception is raised.
         cause.printStackTrace();
         ctx.close();
     }
+
+
+
 }
