@@ -1,7 +1,10 @@
 package wifi.zbf.com.zbf.wifi.sockets3.server;
 
+import android.util.Log;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -45,9 +48,19 @@ public class ServiceServer
             b.childHandler(new HelloServerInitializer());
 
             // 服务器绑定端口监听
-            ChannelFuture f = b.bind(62014).sync();
+            final ChannelFuture f = b.bind(62014).sync();
             // 监听服务器关闭监听
             f.channel().closeFuture().sync();
+            f.addListener(new ChannelFutureListener()
+            {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (f.isSuccess())
+                    {
+                        Log.e("zbf", "服务器端口开启成功:" + 62014);
+                    }
+                }
+            });
 
             // 可以简写为
             /* b.bind(portNumber).sync().channel().closeFuture().sync(); */

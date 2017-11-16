@@ -23,14 +23,14 @@ public class ServerService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        NettyServer.getInstance().init();
-        ServiceServer.getInstance().init();
+        NettyServer.getInstance().init();
+//        ServiceServer.getInstance().init();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        NettyServer.getInstance().shutDown();
+        NettyServer.getInstance().shutDown();
     }
 }

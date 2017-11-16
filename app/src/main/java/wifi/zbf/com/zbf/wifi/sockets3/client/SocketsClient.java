@@ -48,7 +48,7 @@ public class SocketsClient
 
             // 连接服务端
             Channel ch = b.connect(ipAdress, port).sync().channel();
-
+            ch.writeAndFlush("zbf is the best".getBytes());
 /*            // 控制台输入
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             for (; ; )

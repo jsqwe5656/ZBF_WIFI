@@ -235,7 +235,7 @@ public class Main2Activity extends AppCompatActivity
 
                                     }
                                 });*/
-                        SocketsClient.getINstance().init(wifiAdmin.getGateWay(), 62014);
+                        SocketsClient.getINstance().init("127.0.0.1", 62014);
                     }
                 }).start();
                 break;

@@ -14,6 +14,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import wifi.zbf.com.zbf.wifi.sockets.ServerHandler;
+import wifi.zbf.com.zbf.wifi.sockets3.server.HelloServerInitializer;
 
 /**
  * Created by user on 2016/10/27.
@@ -55,44 +56,17 @@ public class NettyServer
         mWorkerGroup = new NioEventLoopGroup();
         //服务端启动引导类，负责配置服务端信息
         mServerBootstrap = new ServerBootstrap();
-/*        mServerBootstrap.group(mWorkerGroup)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>()
-                {
-                    @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        ChannelPipeline p = socketChannel.pipeline();
-                        p.addLast(new ServerHandler());
-                    }
-                });*/
         mServerBootstrap.group(mWorkerGroup)
                 .channel(NioServerSocketChannel.class)
-                .handler(new ChannelInitializer<NioServerSocketChannel>()
-                {
-                    @Override
-                    protected void initChannel(NioServerSocketChannel nioServerSocketChannel) throws Exception {
-                        ChannelPipeline pipeline = nioServerSocketChannel.pipeline();
-//                        pipeline.addLast("ServerSocketChannel out", new OutBoundHandler());
-//                        pipeline.addLast("ServerSocketChannel in", new InBoundHandler());
-                        pipeline.addLast(new ServerHandler());
-                    }
-                })
-                .childHandler(new ChannelInitializer<SocketChannel>()
-                {
-                    @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        //为连接上来的客户端设置pipeline
-                        ChannelPipeline pipeline = socketChannel.pipeline();
-//                        pipeline.addLast("decoder", new ProtobufDecoder(Test.ProtoTest.getDefaultInstance()));
-//                        pipeline.addLast("encoder", new ProtobufEncoder());
-//                        pipeline.addLast("out1", new OutBoundHandler());
-//                        pipeline.addLast("out2", new OutBoundHandler());
-//                        pipeline.addLast("in1", new InBoundHandler());
-//                        pipeline.addLast("in2", new InBoundHandler());
-//                        pipeline.addLast("handler", new ServerChannelHandler());
-                        pipeline.addLast(new ServerHandler());
-                    }
-                });
+//                .handler(new ChannelInitializer<NioServerSocketChannel>()
+//                {
+//                    @Override
+//                    protected void initChannel(NioServerSocketChannel nioServerSocketChannel) throws Exception {
+//                        ChannelPipeline pipeline = nioServerSocketChannel.pipeline();
+//                        pipeline.addLast(new ServerHandler());
+//                    }
+//                })
+                .childHandler(new HelloServerInitializer());
         channelFuture = mServerBootstrap.bind(PORT_NUMBER);
         isInit = true;
         channelFuture.addListener(new ChannelFutureListener()
