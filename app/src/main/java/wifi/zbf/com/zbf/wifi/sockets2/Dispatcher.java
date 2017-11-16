@@ -5,6 +5,8 @@ import android.support.v4.util.ArrayMap;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import wifi.zbf.com.zbf.wifi.sockets2.handler.Test;
+import wifi.zbf.com.zbf.wifi.sockets2.listener.OnReceiveListener;
 
 /**
  * Created by user on 2016/10/27.
@@ -16,11 +18,6 @@ public class Dispatcher extends SimpleChannelInboundHandler<Test.ProtoTest>
 
     public Dispatcher() {
         receiveListenerHolder = new ArrayMap<>();
-    }
-
-    @Override
-    protected void messageReceived(ChannelHandlerContext ctx, Test.ProtoTest msg) throws Exception {
-        channelRead0(ctx,msg);
     }
 
     public void holdListener(Test.ProtoTest test, OnReceiveListener onReceiveListener) {

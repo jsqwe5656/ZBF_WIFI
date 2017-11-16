@@ -17,9 +17,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import wifi.zbf.com.zbf.wifi.sockets.ClientHandler;
+import wifi.zbf.com.zbf.wifi.sockets2.listener.OnServerConnectListener;
 
 /**
  * Created by user on 2016/10/26.
@@ -35,7 +34,6 @@ public class NettyClient
     private EventLoopGroup mWorkerGroup;
     private OnServerConnectListener onServerConnectListener;
     private Dispatcher mDispatcher;
-    private InetSocketAddress IPADRESS;
 
 
     private static NettyClient INSTANCE;
@@ -59,7 +57,6 @@ public class NettyClient
     }
 
     public void connect(final InetSocketAddress socketAddress, OnServerConnectListener onServerConnectListener) {
-        this.IPADRESS = socketAddress;
         if (mChannel != null && mChannel.isActive())
         {
             return;
@@ -143,7 +140,6 @@ public class NettyClient
         ChannelFuture future = null;
         try
         {
-//            future = mBootstrap.connect(IPADRESS).sync();
             mChannel.writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 
             mChannel.closeFuture().sync();

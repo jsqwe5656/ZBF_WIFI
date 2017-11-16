@@ -2,12 +2,9 @@ package wifi.zbf.com.zbf.wifi;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,14 +23,11 @@ import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
-import wifi.zbf.com.zbf.wifi.sockets.Client;
-import wifi.zbf.com.zbf.wifi.sockets.ConnectThread;
-import wifi.zbf.com.zbf.wifi.sockets.ListenerThread;
-import wifi.zbf.com.zbf.wifi.sockets.Server;
 import wifi.zbf.com.zbf.wifi.sockets2.NettyClient;
 import wifi.zbf.com.zbf.wifi.sockets2.NettyServer;
-import wifi.zbf.com.zbf.wifi.sockets2.OnServerConnectListener;
+import wifi.zbf.com.zbf.wifi.sockets2.listener.OnServerConnectListener;
 import wifi.zbf.com.zbf.wifi.sockets2.ServerService;
+import wifi.zbf.com.zbf.wifi.sockets3.client.SocketsClient;
 
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTED;
 import static wifi.zbf.com.zbf.wifi.PublicStatics.DEVICE_CONNECTING;
@@ -127,6 +121,7 @@ public class Main2Activity extends AppCompatActivity
                 Intent intent = new Intent(Main2Activity.this, ServerService.class);
                 if (wifiStates.equals("已开启"))
                 {
+
                     startService(intent);
                 }
                 if (wifiStates.equals("已关闭"))
@@ -210,7 +205,7 @@ public class Main2Activity extends AppCompatActivity
                 {
                     @Override
                     public void run() {
-                        NettyClient.getInstance()
+/*                        NettyClient.getInstance()
                                 .connect(new InetSocketAddress(wifiAdmin.getGateWay(), NettyServer.PORT_NUMBER), new OnServerConnectListener()
                                 {
                                     @Override
@@ -239,7 +234,8 @@ public class Main2Activity extends AppCompatActivity
                                         });
 
                                     }
-                                });
+                                });*/
+                        SocketsClient.getINstance().init(wifiAdmin.getGateWay(), 62014);
                     }
                 }).start();
                 break;

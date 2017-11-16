@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import wifi.zbf.com.zbf.wifi.sockets3.server.ServiceServer;
+
 
 /**
  * 运行netty服务端的服务
@@ -21,13 +23,14 @@ public class ServerService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        NettyServer.getInstance().init();
+//        NettyServer.getInstance().init();
+        ServiceServer.getInstance().init();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        NettyServer.getInstance().shutDown();
+//        NettyServer.getInstance().shutDown();
     }
 }

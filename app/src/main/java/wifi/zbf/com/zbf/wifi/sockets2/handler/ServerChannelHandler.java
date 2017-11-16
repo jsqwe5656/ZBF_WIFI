@@ -1,4 +1,4 @@
-package wifi.zbf.com.zbf.wifi.sockets2;
+package wifi.zbf.com.zbf.wifi.sockets2.handler;
 
 import android.util.Log;
 
@@ -21,10 +21,5 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Test.Proto
                 .setContent("res" + protoTest.getContent())
                 .build();
         channelHandlerContext.writeAndFlush(res);
-    }
-
-    @Override
-    protected void messageReceived(ChannelHandlerContext ctx, Test.ProtoTest msg) throws Exception {
-        channelRead0(ctx, msg);
     }
 }

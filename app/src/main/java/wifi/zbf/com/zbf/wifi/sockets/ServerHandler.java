@@ -2,10 +2,13 @@ package wifi.zbf.com.zbf.wifi.sockets;
 
 import android.util.Log;
 
+import java.net.SocketAddress;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 
 /**
  * 服务端读取收到数据
@@ -13,9 +16,14 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class ServerHandler extends ChannelHandlerAdapter
 {
-    @Override
+/*    @Override
     public void channelActive(ChannelHandlerContext ctx) {
         System.out.println("channelActive!!!!!!!!!!!" + ctx.toString());
+    }
+
+    @Override
+    public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) throws Exception {
+        super.connect(ctx, remoteAddress, localAddress, promise);
     }
 
     @Override
@@ -30,7 +38,7 @@ public class ServerHandler extends ChannelHandlerAdapter
     public void channelReadComplete(ChannelHandlerContext ctx) {
         System.out.println("channelReadComplete!!!!!!!!!!!!!!!!!!!!!!!" + ctx.toString() + ctx.toString());
         ctx.flush();
-    }
+    }*/
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -39,6 +47,7 @@ public class ServerHandler extends ChannelHandlerAdapter
         cause.printStackTrace();
         ctx.close();
     }
+
 
 
 
